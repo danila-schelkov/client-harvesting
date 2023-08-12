@@ -5,9 +5,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Fertilizable;
 import net.minecraft.block.NetherWartBlock;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -17,15 +22,15 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 public final class CropEvents {
-    public static ActionResult useBlock(PlayerEntity ignoredPlayer, World world, Hand ignoredHand, BlockHitResult blockHitResult) {
-        if (harvest(world, blockHitResult)) {
+    public static ActionResult useBlock(PlayerEntity player, World world, Hand ignoredHand, BlockHitResult blockHitResult) {
+        if (player instanceof ClientPlayerEntity && harvest(world, player, blockHitResult)) {
             return ActionResult.SUCCESS;
         }
 
         return ActionResult.PASS;
     }
 
-    private static boolean harvest(World world, BlockHitResult blockHitResult) {
+    private static boolean harvest(World world, PlayerEntity player, BlockHitResult blockHitResult) {
         BlockPos blockPos = blockHitResult.getBlockPos();
 
         BlockState blockState = world.getBlockState(blockPos);
@@ -44,13 +49,35 @@ public final class CropEvents {
         ClientPlayerInteractionManager interactionManager = client.interactionManager;
         if (interactionManager == null) return false;
 
-        boolean blockBroken = interactionManager.updateBlockBreakingProgress(blockPos, blockHitResult.getSide());
-        if (!blockBroken) return false;
+        if (!breakBlock(interactionManager, blockHitResult)) return false;
 
-//        boolean blockSet = world.setBlockState(blockPos, block.getStateManager().getDefaultState());
-//        System.out.println(blockSet);
+        pickSeedItem(interactionManager, player, block.asItem());
 
         return true;
+    }
+
+    private static boolean breakBlock(ClientPlayerInteractionManager interactionManager, BlockHitResult blockHitResult) {
+        return interactionManager.updateBlockBreakingProgress(blockHitResult.getBlockPos(), blockHitResult.getSide());
+    }
+
+    private static void pickSeedItem(ClientPlayerInteractionManager interactionManager, PlayerEntity player, Item seedItem) {
+        ItemStack seedItemStack = new ItemStack(seedItem);
+        PlayerInventory inventory = player.getInventory();
+        int slotWithStack = inventory.getSlotWithStack(seedItemStack);
+        if (slotWithStack == -1) {
+            player.sendMessage(Text.of("Семена этого растения не найдены в инвентаре."), true);
+            return;
+        }
+
+        pickFromInventory(interactionManager, inventory, slotWithStack);
+    }
+
+    private static void pickFromInventory(ClientPlayerInteractionManager interactionManager, PlayerInventory inventory, int slotWithStack) {
+        if (PlayerInventory.isValidHotbarIndex(slotWithStack)) {
+            inventory.selectedSlot = slotWithStack;
+        } else {
+            interactionManager.pickFromInventory(slotWithStack);
+        }
     }
 
     private static Fertilizable getFertilizable(Block block) {
