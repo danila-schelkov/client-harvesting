@@ -52,6 +52,7 @@ public final class CropEvents {
         if (!breakBlock(interactionManager, blockHitResult)) return false;
 
         pickSeedItem(interactionManager, player, block.asItem());
+        placeSeedItem(interactionManager, player, blockHitResult);
 
         return true;
     }
@@ -78,6 +79,10 @@ public final class CropEvents {
         } else {
             interactionManager.pickFromInventory(slotWithStack);
         }
+    }
+
+    private static void placeSeedItem(ClientPlayerInteractionManager interactionManager, PlayerEntity player, BlockHitResult blockHitResult) {
+        interactionManager.interactBlock(((ClientPlayerEntity) player), player.getActiveHand(), blockHitResult);
     }
 
     private static Fertilizable getFertilizable(Block block) {
