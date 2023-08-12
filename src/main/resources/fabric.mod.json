@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "reap",
+  "version": "${version}",
+  "name": "Reap",
+  "description": "A client-side reap mod rework",
+  "authors": [
+    "Vorono4ka"
+  ],
+  "contact": {
+    "website": "https://github.com/danila-schelkov/reap",
+    "repo": "https://github.com/danila-schelkov/reap"
+  },
+  "license": "GPL-3.0",
+  "icon": "assets/reap/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.vorono4ka.reap.client.ReapClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
