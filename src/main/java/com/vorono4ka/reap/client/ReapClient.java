@@ -1,5 +1,6 @@
 package com.vorono4ka.reap.client;
 
+import com.vorono4ka.config.ModConfig;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import org.slf4j.Logger;
@@ -12,6 +13,8 @@ public class ReapClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         LOGGER.info("Client mod initialized!");
+
+        ModConfig.registerConfig();
 
         UseBlockCallback.EVENT.register(CropEvents::useBlock);
     }

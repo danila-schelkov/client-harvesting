@@ -1,5 +1,7 @@
 package com.vorono4ka.reap.client;
 
+import com.vorono4ka.config.ModConfig;
+import com.vorono4ka.utilities.ArrayUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Fertilizable;
@@ -18,8 +20,12 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+
+import java.util.Optional;
 
 public final class CropEvents {
     public static ActionResult useBlock(PlayerEntity player, World world, Hand ignoredHand, BlockHitResult blockHitResult) {
@@ -36,7 +42,12 @@ public final class CropEvents {
         BlockState blockState = world.getBlockState(blockPos);
         Block block = blockState.getBlock();
 
-        // check if block is in config harvestable
+        RegistryEntry<Block> registryEntry = blockState.getRegistryEntry();
+        Optional<RegistryKey<Block>> key = registryEntry.getKey();
+        if (key.isEmpty()) return false;
+
+        String blockId = key.get().getValue().toString();
+        if (!ArrayUtils.contains(ModConfig.harvestingWhitelist, blockId)) return false;
 
         Fertilizable fertilizable = getFertilizable(block);
         if (fertilizable == null) return false;
@@ -92,7 +103,6 @@ public final class CropEvents {
 
         if (block instanceof NetherWartBlock) {
             return new Fertilizable() {
-
                 @Override
                 public boolean isFertilizable(BlockView world, BlockPos pos, BlockState state, boolean isClient) {
                     return state.hasRandomTicks();
