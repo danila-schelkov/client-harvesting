@@ -66,7 +66,7 @@ public final class CropEvents {
         PlayerInventory inventory = player.getInventory();
         int slotWithStack = inventory.getSlotWithStack(seedItemStack);
         if (slotWithStack == -1) {
-            player.sendMessage(Text.of("Семена этого растения не найдены в инвентаре."), true);
+            player.sendMessage(Text.translatable("actions.reap.pick_seed_item.failed"), true);
             return;
         }
 
